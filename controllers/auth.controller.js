@@ -1,10 +1,19 @@
 import User from "../models/user.model.js";
-import createError from "../utils/createError.js";
+import { createError } from "../middlewares/globalErrHandler.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 export const register = async (req, res, next) => {
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({
+      $or: [{ email: req.body.email }, { username: req.body.username }],
+    });
+
+    if (existingUser) {
+      return next(createError(400, "User already exists!"));
+    }
+
     const hash = bcrypt.hashSync(req.body.password, 5);
     const newUser = new User({
       ...req.body,

@@ -10,6 +10,13 @@ export const globalErrhandler = (err, req, res, next) => {
   });
 };
 
+// Factory function for creating errors
+export const createError = (statusCode, message) => {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+};
+
 //404 handler
 export const notFound = (req, res, next) => {
   const err = new Error(`Route ${req.originalUrl} Not Found`);
