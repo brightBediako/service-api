@@ -2,6 +2,18 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import { createError } from "../middlewares/globalErrHandler.js";
 
+export const getUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return next(createError(404, "User not found!"));
+
+    const { password, ...info } = user._doc;
+    res.status(200).send(info);
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
@@ -18,14 +30,4 @@ export const deleteUser = async (req, res, next) => {
   }
 };
 
-export const getUser = async (req, res, next) => {
-  try {
-    const user = await User.findById(req.params.id);
-    if (!user) return next(createError(404, "User not found!"));
 
-    const { password, ...info } = user._doc;
-    res.status(200).send(info);
-  } catch (err) {
-    next(err);
-  }
-};

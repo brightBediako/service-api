@@ -1,5 +1,6 @@
 import Gig from "../models/gig.model.js";
 import { createError } from "../middlewares/globalErrHandler.js";
+import gigModel from "../models/gig.model.js";
 
 export const createGig = async (req, res, next) => {
   if (!req.isSeller) {
@@ -30,6 +31,24 @@ export const deleteGig = async (req, res, next) => {
 
     await Gig.findByIdAndDelete(req.params.id);
     res.status(200).send("Gig has been deleted.");
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateGig = async (req, res, next) => {
+  try {
+    const gig = await Gig.findById(req.params.id);
+    if (!gig) return next(createError(404, "Gig not found!"));
+    if (gig.userId !== req.userId) {
+      return next(createError(403, "You can update only your gigs!"));
+    }
+    const updatedGig = await Gig.findByIdAndUpdate(
+      req.params.id,
+      { $set: req.body },
+      { new: true }
+    );
+    res.status(200).json(updatedGig);
   } catch (err) {
     next(err);
   }
