@@ -1,6 +1,5 @@
 import Gig from "../models/gig.model.js";
 import { createError } from "../middlewares/globalErrHandler.js";
-import gigModel from "../models/gig.model.js";
 
 export const createGig = async (req, res, next) => {
   if (!req.isSeller) {
