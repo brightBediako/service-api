@@ -17,15 +17,15 @@ export const createReview = async (req, res, next) => {
 
   try {
     // Check if the user purchased the gig
-    // const order = await Order.findOne({
-    //   gigId: req.body.gigId,
-    //   buyerId: req.userId,
-    //   isCompleted: true,
-    // });
+    const order = await Order.findOne({
+      gigId: req.body.gigId,
+      buyerId: req.userId,
+      isCompleted: true,
+    });
 
-    // if (!order) {
-    //   return next(createError(403, "You can only review purchased gigs!"));
-    // }
+    if (!order) {
+      return next(createError(403, "You can only review purchased gigs!"));
+    }
 
     // Check if user already reviewed this gig
     const existingReview = await Review.findOne({
