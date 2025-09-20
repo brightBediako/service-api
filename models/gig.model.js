@@ -63,6 +63,27 @@ const GigSchema = new Schema(
       type: Number,
       default: 0,
     },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected", "suspended"],
+      default: "pending",
+    },
+    adminNotes: {
+      type: String,
+      required: false,
+    },
+    approvedBy: {
+      type: String,
+      required: false,
+    },
+    approvedAt: {
+      type: Date,
+      required: false,
+    },
+    rejectionReason: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: true,

@@ -71,6 +71,8 @@ export const getGigs = async (req, res, next) => {
     ...(q.min && { price: { $gte: q.min } }),
     ...(q.max && { price: { $lte: q.max } }),
     ...(q.search && { title: { $regex: q.search, $options: "i" } }),
+    // Only show approved gigs to regular users
+    ...(req.isAdmin ? {} : { status: "approved" }),
   };
 
   try {

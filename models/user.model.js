@@ -40,10 +40,39 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    isBanned: {
+      type: Boolean,
+      default: false,
+    },
+    banReason: {
+      type: String,
+      required: false,
+    },
+    lastLogin: {
+      type: Date,
+      required: false,
+    },
+    verificationStatus: {
+      type: String,
+      enum: ["pending", "verified", "rejected"],
+      default: "pending",
+    },
+    verificationDocuments: {
+      type: [String],
+      required: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.model("User", userSchema)
+export default mongoose.model("User", userSchema);

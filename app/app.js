@@ -8,6 +8,7 @@ import orderRoute from "../routes/order.route.js";
 import conversationRoute from "../routes/conversation.route.js";
 import messageRoute from "../routes/message.route.js";
 import reviewRoute from "../routes/review.route.js";
+import adminRoute from "../routes/admin.route.js";
 
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -24,7 +25,7 @@ const app = express();
 app.use(cors());
 
 // pass incoming data
-app.use(cors({origin: "http://localhost:3000", credentials: true }));
+app.use(cors({ origin: "http://localhost:3000", credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -46,6 +47,7 @@ app.use("/api/orders", orderRoute);
 app.use("/api/conversations", conversationRoute);
 app.use("/api/messages", messageRoute);
 app.use("/api/reviews", reviewRoute);
+app.use("/api/admin", adminRoute);
 
 // error middleware
 // not found middleware

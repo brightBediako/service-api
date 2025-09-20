@@ -41,6 +41,8 @@ export const login = async (req, res, next) => {
       {
         id: user._id,
         isSeller: user.isSeller,
+        isAdmin: user.isAdmin,
+        isSuperAdmin: user.isAdmin, // For now, all admins are super admins
       },
       process.env.JWT_KEY
     );
