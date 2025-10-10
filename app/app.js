@@ -21,7 +21,6 @@ dotenv.config();
 dbConnect();
 const app = express();
 
-//cors
 //cors configuration
 const corsOptions = {
   origin: "http://localhost:3000",
@@ -33,7 +32,6 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
 
 // custom routes
 app.use("/api/auth", authRoute);
