@@ -22,15 +22,15 @@ export const register = async (req, res, next) => {
     });
 
     // create notification
-    const notification = await Notification.create({
-      userId: user._id,
-      message: `<p>
-      Welcome to <strong>JoyDom</strong> – your trusted platform for professional artisan!
-    </p>`,
-    });
-    if (user && user.email) {
-      await sendRegisterNotificationEmail(user.email, user.username);
-    }
+    // const notification = await Notification.create({
+    //   userId: user._id,
+    //   message: `<p>
+    //   Welcome to <strong>JoyDom</strong> – your trusted platform for professional artisan!
+    // </p>`,
+    // });
+    // if (user && user.email) {
+    //   await sendRegisterNotificationEmail(user.email, user.username);
+    // }
 
     await newUser.save();
     res.status(201).send("User registered successfully...");
