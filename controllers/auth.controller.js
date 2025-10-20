@@ -6,12 +6,26 @@ import { sendRegisterNotificationEmail } from "../services/emailService.js";
 
 export const register = async (req, res, next) => {
   try {
-    // Check if user already exists
+    // Check if user already exists by email, username, or phone
     const existingUser = await User.findOne({
-      $or: [{ email: req.body.email }, { username: req.body.username }],
+      $or: [
+        { email: req.body.email },
+        { phone: req.body.phone },
+      ],
     });
 
     if (existingUser) {
+      // Provide specific error messages based on which field is duplicated
+      if (existingUser.email === req.body.email) {
+        return next(
+          createError(400, "An account with this email already exists!")
+        );
+      }
+      if (existingUser.phone === req.body.phone) {
+        return next(
+          createError(400, "An account with this phone number already exists!")
+        );
+      }
       return next(createError(400, "User already exists!"));
     }
 
@@ -35,6 +49,28 @@ export const register = async (req, res, next) => {
     await newUser.save();
     res.status(201).send("User registered successfully...");
   } catch (err) {
+    // Handle MongoDB duplicate key errors more gracefully
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern)[0];
+      const value = err.keyValue[field];
+
+      if (field === "email") {
+        return next(
+          createError(400, "An account with this email already exists!")
+        );
+      }
+      if (field === "phone") {
+        return next(
+          createError(400, "An account with this phone number already exists!")
+        );
+      }
+      if (field === "username") {
+        return next(createError(400, "This username is already taken!"));
+      }
+
+      return next(createError(400, `Duplicate ${field}: ${value}`));
+    }
+
     next(err);
   }
 };

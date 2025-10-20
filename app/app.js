@@ -23,7 +23,13 @@ const app = express();
 
 //cors configuration
 const corsOptions = {
-  origin: "https://service-two-sand.vercel.app/",
+  origin: [
+    "https://service-two-sand.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+  ],
   credentials: true, // Allow cookies to be sent
 };
 
