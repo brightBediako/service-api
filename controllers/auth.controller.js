@@ -6,6 +6,16 @@ import { sendRegisterNotificationEmail } from "../services/emailService.js";
 
 export const register = async (req, res, next) => {
   try {
+    // Normalize phone: allow local Ghana format like 0557894646 → +233557894646
+    const rawPhone =
+      typeof req.body.phone === "string" ? req.body.phone.trim() : "";
+    let normalizedPhone = rawPhone;
+    if (rawPhone && /^0\d{9}$/.test(rawPhone)) {
+      normalizedPhone = `+233${rawPhone.slice(1)}`;
+    }
+    // If already in international format, leave as-is
+    req.body.phone = normalizedPhone || req.body.phone;
+
     // Check if user already exists by email, username, or phone
     const existingUser = await User.findOne({
       $or: [{ email: req.body.email }, { phone: req.body.phone }],
@@ -29,6 +39,7 @@ export const register = async (req, res, next) => {
     const hash = bcrypt.hashSync(req.body.password, 5);
     const newUser = new User({
       ...req.body,
+      phone: req.body.phone, // ensure normalized phone is saved
       password: hash,
     });
 
@@ -80,7 +91,23 @@ export const register = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
-    const user = await User.findOne({ username: req.body.username });
+    const identifier = (req.body.username || "").trim();
+
+    // Normalize potential local Ghana phone to international for lookup
+    let normalizedIdentifier = identifier;
+    if (/^0\d{9}$/.test(identifier)) {
+      normalizedIdentifier = `+233${identifier.slice(1)}`;
+    }
+
+    // Allow login by username, email, or phone
+    const user = await User.findOne({
+      $or: [
+        { username: identifier },
+        { email: identifier },
+        { phone: identifier },
+        { phone: normalizedIdentifier },
+      ],
+    });
 
     if (!user) return next(createError(404, "User not found!"));
 
@@ -104,7 +131,7 @@ export const login = async (req, res, next) => {
         httpOnly: true,
       })
       .status(200)
-      .send(info);
+      .json({ message: "Login successful", user: info, token });
   } catch (err) {
     next(err);
   }
