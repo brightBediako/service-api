@@ -29,6 +29,8 @@ const corsOptions = {
 
     const allowedOrigins = [
       "https://service-two-sand.vercel.app",
+      "http://localhost:8000",
+      "http://127.0.0.1:8000/",
       "http://localhost:5173",
       "http://localhost:3000",
       "http://127.0.0.1:5173",
@@ -76,9 +78,38 @@ const corsOptions = {
 // pass incoming data
 app.use(cors(corsOptions));
 
+// Global preflight handler (no wildcard path)
+app.use((req, res, next) => {
+  if (req.method === "OPTIONS") {
+    const requestOrigin = req.headers.origin || "*";
+    res.header("Access-Control-Allow-Origin", requestOrigin);
+    res.header("Vary", "Origin");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+    );
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Health checks (avoid wildcard routes for Express 5 compatibility)
+app.get("/", (req, res) => {
+  res.status(200).send("OK");
+});
+
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 // custom routes
 app.use("/api/auth", authRoute);
