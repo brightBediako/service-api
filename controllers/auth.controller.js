@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import Notification from "../models/notification.model.js";
 import { createError } from "../middlewares/globalErrHandler.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -44,17 +45,20 @@ export const register = async (req, res, next) => {
     });
 
     // create notification
-    // const notification = await Notification.create({
-    //   userId: user._id,
-    //   message: `<p>
-    //   Welcome to <strong>JoyDom</strong> – your trusted platform for professional artisan!
-    // </p>`,
-    // });
-    // if (user && user.email) {
-    //   await sendRegisterNotificationEmail(user.email, user.username);
-    // }
+    // Optionally send registration email after user is saved below
 
     await newUser.save();
+
+    // create notification
+    const notification = await Notification.create({
+      userId: newUser._id,
+      message: `<p>
+  Welcome to <strong>FarmLink</strong> – your trusted platform for buying and selling fresh farm produce!
+</p>`,
+    });
+    if (newUser && newUser.email) {
+      await sendRegisterNotificationEmail(newUser.email, newUser.fullname);
+    }
 
     // Return user data without password
     const { password, ...userInfo } = newUser._doc;
@@ -77,9 +81,6 @@ export const register = async (req, res, next) => {
         return next(
           createError(400, "An account with this phone number already exists!")
         );
-      }
-      if (field === "username") {
-        return next(createError(400, "This username is already taken!"));
       }
 
       return next(createError(400, `Duplicate ${field}: ${value}`));
