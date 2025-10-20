@@ -8,10 +8,7 @@ export const register = async (req, res, next) => {
   try {
     // Check if user already exists by email, username, or phone
     const existingUser = await User.findOne({
-      $or: [
-        { email: req.body.email },
-        { phone: req.body.phone },
-      ],
+      $or: [{ email: req.body.email }, { phone: req.body.phone }],
     });
 
     if (existingUser) {
@@ -47,7 +44,13 @@ export const register = async (req, res, next) => {
     // }
 
     await newUser.save();
-    res.status(201).send("User registered successfully...");
+
+    // Return user data without password
+    const { password, ...userInfo } = newUser._doc;
+    res.status(201).json({
+      message: "User registered successfully",
+      user: userInfo,
+    });
   } catch (err) {
     // Handle MongoDB duplicate key errors more gracefully
     if (err.code === 11000) {
