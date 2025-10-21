@@ -14,10 +14,9 @@ export const register = async (req, res, next) => {
     if (rawPhone && /^0\d{9}$/.test(rawPhone)) {
       normalizedPhone = `+233${rawPhone.slice(1)}`;
     }
-    // If already in international format, leave as-is
     req.body.phone = normalizedPhone || req.body.phone;
 
-    // Check if user already exists by email, username, or phone
+    // Check if user already exists by email or phone ONLY (not username)
     const existingUser = await User.findOne({
       $or: [{ email: req.body.email }, { phone: req.body.phone }],
     });
@@ -34,28 +33,27 @@ export const register = async (req, res, next) => {
           createError(400, "An account with this phone number already exists!")
         );
       }
-      return next(createError(400, "User already exists!"));
     }
 
+    // Hash password and create new user
     const hash = bcrypt.hashSync(req.body.password, 5);
     const newUser = new User({
       ...req.body,
-      phone: req.body.phone, // ensure normalized phone is saved
+      phone: req.body.phone,
       password: hash,
     });
 
-    // create notification
-    // Optionally send registration email after user is saved below
-
     await newUser.save();
 
-    // create notification
-    const notification = await Notification.create({
-      userId: newUser._id,
+    // Create welcome notification
+    await Notification.create({
+      user: newUser._id,
       message: `<p>
   Welcome to <strong>FarmLink</strong> – your trusted platform for buying and selling fresh farm produce!
 </p>`,
     });
+
+    // Send registration email if email exists
     if (newUser && newUser.email) {
       await sendRegisterNotificationEmail(newUser.email, newUser.fullname);
     }
@@ -67,25 +65,41 @@ export const register = async (req, res, next) => {
       user: userInfo,
     });
   } catch (err) {
-    // Handle MongoDB duplicate key errors more gracefully
+    // Handle MongoDB duplicate key errors
     if (err.code === 11000) {
       const field = Object.keys(err.keyPattern)[0];
       const value = err.keyValue[field];
 
+      // Handle email duplicates
       if (field === "email") {
         return next(
           createError(400, "An account with this email already exists!")
         );
       }
+
+      // Handle phone duplicates
       if (field === "phone") {
         return next(
           createError(400, "An account with this phone number already exists!")
         );
       }
 
+      // Handle username duplicates - this shouldn't happen if index is removed
+      // But if it does, provide helpful error
+      if (field === "username") {
+        return next(
+          createError(
+            500,
+            "Username unique constraint detected. Please remove the unique index on 'username' field in MongoDB to allow duplicate usernames."
+          )
+        );
+      }
+
+      // Generic duplicate key error
       return next(createError(400, `Duplicate ${field}: ${value}`));
     }
 
+    // Pass other errors to global error handler
     next(err);
   }
 };
